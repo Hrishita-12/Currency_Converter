@@ -209,7 +209,7 @@ def logout_user(dashboard):
 # Open dashboard
 def open_dashboard():
     global from_currency_combobox, to_currency_combobox, amount_entry, result_label, history_table
-
+    
     dashboard = tk.Toplevel()
     dashboard.title("Dashboard")
     dashboard.geometry("600x400")
@@ -310,64 +310,64 @@ def plot_exchange_rate_trends(base_currency, target_currencies):
 
 def plot_currency_comparison(base_currency, target_currencies):
     url = f"https://v6.exchangerate-api.com/v6/c2b49a5597e5f82d808446c0/latest/{base_currency}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        rates = response.json()['conversion_rates']
-        filtered_rates = {currency: rates[currency] for currency in target_currencies if currency in rates}
-    else:
-        messagebox.showerror("Error", "Failed to fetch latest exchange rates.")
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            rates = data['conversion_rates']
+            
+            # Collect rates for the target currencies
+            comparison_data = {currency: rates.get(currency, None) for currency in target_currencies}
+            
+            # Filter out any None values
+            valid_data = {k: v for k, v in comparison_data.items() if v is not None}
+            currencies = list(valid_data.keys())
+            values = list(valid_data.values())
+            
+            # Create the bar plot
+            fig, ax = plt.subplots(figsize=(10, 6))
+            ax.bar(currencies, values, color='skyblue')
+            
+            ax.set_title(f"Exchange Rates: {base_currency} vs Target Currencies", fontsize=16)
+            ax.set_xlabel("Currencies", fontsize=12)
+            ax.set_ylabel("Exchange Rate", fontsize=12)
+            ax.grid(axis='y', linestyle='--', alpha=0.7)
+            
+            plt.tight_layout()
+            return fig
+        else:
+            messagebox.showerror("Error", "Failed to fetch exchange rates for comparison.")
+            return None
+    except requests.exceptions.RequestException:
+        messagebox.showerror("Error", "Failed to connect to the exchange rate API.")
         return None
-    
-    fig, ax = plt.subplots(figsize=(12, 6))
-    currencies = list(filtered_rates.keys())
-    values = list(filtered_rates.values())
-    bars = ax.bar(currencies, values, color='skyblue', edgecolor='navy')
-    
-    ax.set_title(f"Currency Comparison (Base: {base_currency})")
-    ax.set_ylabel("Exchange Rate")
-    ax.set_ylim(0, max(values) * 1.1)
-    
-    for bar in bars:
-        height = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2., height,
-                f'{height:.4f}',
-                ha='center', va='bottom')
-    
-    plt.tight_layout()
-    
-    return fig
+
 
 def open_visualization_window():
     viz_window = tk.Toplevel()
-    viz_window.title("Exchange Rate Visualizations")
-    viz_window.geometry("1200x800")
+    viz_window.title("Currency Visualization")
+    viz_window.geometry("800x600")
     
-    notebook = ttk.Notebook(viz_window)
-    notebook.pack(fill=tk.BOTH, expand=True)
+    tk.Label(viz_window, text="Base Currency", font=("Arial", 14)).pack(pady=10)
+    base_currency_entry = ttk.Combobox(viz_window, values=["USD", "EUR", "GBP", "INR", "JPY", "AUD", "CAD", "CHF", "CNY", "MXN"], font=("Arial", 12))
+    base_currency_entry.pack(pady=5)
     
-    trends_frame = ttk.Frame(notebook)
-    comparison_frame = ttk.Frame(notebook)
+    tk.Label(viz_window, text="Target Currencies (comma-separated)", font=("Arial", 14)).pack(pady=10)
+    target_currency_entry = tk.Entry(viz_window, font=("Arial", 12))
+    target_currency_entry.pack(pady=5)
     
-    notebook.add(trends_frame, text="Exchange Rate Trends (Past Year)")
-    notebook.add(comparison_frame, text="Currency Comparison")
+    def visualize_comparison():
+        base_currency = base_currency_entry.get()
+        target_currencies = target_currency_entry.get().split(",")
+        target_currencies = [currency.strip().upper() for currency in target_currencies]
+        
+        fig = plot_currency_comparison(base_currency, target_currencies)
+        if fig:
+            canvas = FigureCanvasTkAgg(fig, master=viz_window)
+            canvas.get_tk_widget().pack(fill="both", expand=True)
+            canvas.draw()
     
-    base_currency = from_currency_combobox.get() or "USD"
-    target_currencies = ["USD", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "CNY", "INR"]
-    if base_currency in target_currencies:
-        target_currencies.remove(base_currency)
-    
-    # Exchange Rate Trends
-    trends_fig = plot_exchange_rate_trends(base_currency, target_currencies)
-    trends_canvas = FigureCanvasTkAgg(trends_fig, master=trends_frame)
-    trends_canvas.draw()
-    trends_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-    
-    # Currency Comparison
-    comparison_fig = plot_currency_comparison(base_currency, target_currencies)
-    if comparison_fig:
-        comparison_canvas = FigureCanvasTkAgg(comparison_fig, master=comparison_frame)
-        comparison_canvas.draw()
-        comparison_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+    tk.Button(viz_window, text="Visualize", font=("Arial", 14), bg="#2196F3", fg="white", command=visualize_comparison).pack(pady=20)
 
 
 
@@ -430,3 +430,8 @@ register_button.pack()
 #currency_text_label.place(relx=0.3, rely=0.575, anchor="center")
 
 root.mainloop()
+
+
+
+
+
