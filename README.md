@@ -38,22 +38,3 @@ This is a **Python-based currency converter** with a built-in **login system** a
 
 ## Contributing
 Pull requests are welcome! For major changes, please open an issue first to discuss what you’d like to change.
-
-## License
-MIT License. See `LICENSE` for details.
-
----
-
-**GitHub Project Description**
-A Python-based **Currency Converter** with a **secure login system** and **real-time exchange rate visualization** using Matplotlib. This application allows users to **convert currencies, track trends, and store past conversions**. Built with Python, Tkinter, and a database for user authentication, this tool is useful for anyone dealing with international transactions.
-
-📌 **Features:**
-- Login/Signup authentication
-- Live currency exchange rates
-- Graphical trend analysis using Matplotlib
-- User history tracking
-
-🚀 **Technologies:** Python, Tkinter, Matplotlib, SQLite/MySQL, Requests API
-
-🔗 **Get Started**: Clone the repository and run `python main.py`.
-
